@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+service Backend {
+   // Returns IDs of all pending requests.
+   rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {}
+   // Returns details of a particular requests.
+   rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {}
+   // Updates the data request. See the `UpdateRequestRequest` for more details.
+   rpc UpdateRequest(UpdateRequestRequest) returns (UpdateRequestResponse) {}
+   // Deletes the specified data request.
+   rpc DeleteRequest(DeleteRequestRequest) returns (DeleteRequestResponse) {}
+   // Retrieves user metadata.
+   rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
+}
+message DataRequest {
+   string name = 1;
+   repeated string inputs = 2;
+   string results = 3;
+   string requestor_id = 4;
+   uint64 submitted_timestamp_us = 5;
+   repeated string comment = 6;
+   enum Status {
+      PENDING = 0;
+      APPROVED = 1;
+      REJECTED = 2;
+  }
+  Status status = 7;
+}
+ 
+message ListRequestsRequest {}
+message ListRequestsResponse {
+   repeated string id = 1;
+}
+ 
+message GetRequestRequest {
+   string id = 1;
+}
+message GetRequestResponse {
+   DataRequest request = 1;
+}
+ 
+message DeleteRequestRequest {
+   string id = 1;
+}
+message DeleteRequestResponse {}
+ 
+message GetUserInfoRequest {
+   string id = 1;
+}
+message GetUserInfoResponse {
+   string name = 1;
+   bytes profile_pic = 2;
+}
+ 
+message UpdateRequestRequest {
+   string id = 1;
+   // The logic of this method is the following:
+   // -- If the up-to-date DataRequest on the backend equals to `original_request`, set it to `new_request`;
+   // -- If it is not - return an RPC error.
+   // This is done to prevent race conditions.
+   DataRequest original_request = 2;
+   DataRequest new_request = 3;
+}
+message UpdateRequestResponse {}
